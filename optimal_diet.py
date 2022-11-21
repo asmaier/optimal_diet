@@ -228,7 +228,7 @@ for i, food in enumerate(foods):
             nutrients_result[j] += data[i][j + 2] * food.solution_value()
 
 df_food_per_day = pd.DataFrame(food_per_day, columns=("food", goal_options.get(goal))) 
-st.table(df_food_per_day)  
+st.table(df_food_per_day.style.format("{:.4f}", subset=df_food_per_day.select_dtypes(float).columns))  
 
 st.write('\nTotal minimum daily {}: {:.4f}'.format(goal_options.get(goal),objective.Value()))  
 
@@ -240,7 +240,7 @@ for i, nutrient in enumerate(nutrients):
     nut_per_day.append((nutrient[0], nutrient[1], nutrients_result[i], nutrients_result[i]/nutrient[1]*100 if nutrient[1] else float("nan") ))
 
 df_nut_per_day = pd.DataFrame(nut_per_day, columns=("nutrient", "min", "total", "%"))
-st.table(df_nut_per_day)
+st.table(df_nut_per_day.style.format("{:.2f}", subset=df_nut_per_day.select_dtypes(float).columns))
 
 #st.write('{}: {:.2f} (min {})'.format(nutrient[0], nutrients_result[i],nutrient[1]))
 
@@ -257,10 +257,9 @@ for i, food in enumerate(foods):
 
 columns = [replace_unit_with_percent(n[0]) for n in nutrients]
 
-df_foods = pd.DataFrame.from_dict(nutrient_per_food, orient='index', 
-    columns=columns)
+df_foods = pd.DataFrame.from_dict(nutrient_per_food, orient='index', columns=columns)
 
 for i, column in enumerate(columns):
-    df_foods[column]=(df_foods[column]/nutrients_result[i]*100).round(2)
+    df_foods[column]=df_foods[column]/nutrients_result[i]*100
 
-st.table(df_foods)                                       
+st.table(df_foods.style.format("{:.2f}"))                                       

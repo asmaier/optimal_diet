@@ -1,8 +1,14 @@
+import re
+
 import streamlit as st
 import pandas as pd
 
 from ortools.linear_solver import pywraplp
 from ortools.init import pywrapinit
+
+
+def replace_unit_with_percent(column_name):
+    return re.sub(r"\((.*)\)", "(%)", column_name)
 
 st.title("Optimal diet (for 1939)")
 
@@ -130,7 +136,7 @@ data = [
   [20.5, 2213.0, 6.4, 11.0, 0.4, 7.0, 0.2, 0.2, 0.4, 3.0, 0.0]
 ]
 
-st.subheader("Nutrient minimums")
+
 
 # Nutrient minimums.
 nut_default = [['Calories (1000 kcal)', 3], ['Protein (g)', 70], [
@@ -138,16 +144,17 @@ nut_default = [['Calories (1000 kcal)', 3], ['Protein (g)', 70], [
 ], ['Iron (mg)', 12], ['Vitamin A (KIU)', 5], ['Vitamin B1 (mg)', 1.8],
              ['Vitamin B2 (mg)', 2.7], ['Niacin (mg)',
                                         18], ['Vitamin C (mg)', 75]]
-
-calories = st.text_input(nut_default[0][0],nut_default[0][1])
-protein = st.text_input(nut_default[1][0],nut_default[1][1])
-calcium = st.text_input(nut_default[2][0],nut_default[2][1])
-iron = st.text_input(nut_default[3][0],nut_default[3][1])
-a = st.text_input(nut_default[4][0],nut_default[4][1])
-b1 = st.text_input(nut_default[5][0],nut_default[5][1])
-b2 = st.text_input(nut_default[6][0],nut_default[6][1])
-b3 = st.text_input(nut_default[7][0],nut_default[7][1])
-c = st.text_input(nut_default[8][0],nut_default[8][1])
+with st.sidebar:
+    st.subheader("Nutrient minimums")
+    calories = st.text_input(nut_default[0][0],nut_default[0][1])
+    protein = st.text_input(nut_default[1][0],nut_default[1][1])
+    calcium = st.text_input(nut_default[2][0],nut_default[2][1])
+    iron = st.text_input(nut_default[3][0],nut_default[3][1])
+    a = st.text_input(nut_default[4][0],nut_default[4][1])
+    b1 = st.text_input(nut_default[5][0],nut_default[5][1])
+    b2 = st.text_input(nut_default[6][0],nut_default[6][1])
+    b3 = st.text_input(nut_default[7][0],nut_default[7][1])
+    c = st.text_input(nut_default[8][0],nut_default[8][1])
 
 nutrients = [['Calories (kcal)', float(calories)], 
 ['Protein (g)', float(protein)], 
@@ -161,7 +168,7 @@ nutrients = [['Calories (kcal)', float(calories)],
 
 st.subheader("Minimization goal")
 goal_options = {0:"prize ($)", 1:"mass (gramm)", 2:"calories (1000 kcal)"}
-goal = st.radio(label="", options=[0,2,1], format_func=lambda x: goal_options.get(x))
+goal = st.radio(label="Minimize", options=[0,2,1], format_func=lambda x: goal_options.get(x))
 
 # Create the linear solver with the GLOP (the Google Linear Optimization Package) backend (advanced simplex)
 # see https://en.wikipedia.org/wiki/GLOP
@@ -230,9 +237,9 @@ st.subheader('Nutrients per day')
 nut_per_day=[]
 
 for i, nutrient in enumerate(nutrients):
-    nut_per_day.append((nutrient[0], nutrients_result[i], nutrient[1]))
+    nut_per_day.append((nutrient[0], nutrient[1], nutrients_result[i], nutrients_result[i]/nutrient[1]*100 if nutrient[1] else float("nan") ))
 
-df_nut_per_day = pd.DataFrame(nut_per_day, columns=("nutrient", "total", "min"))
+df_nut_per_day = pd.DataFrame(nut_per_day, columns=("nutrient", "min", "total", "%"))
 st.table(df_nut_per_day)
 
 #st.write('{}: {:.2f} (min {})'.format(nutrient[0], nutrients_result[i],nutrient[1]))
@@ -247,10 +254,13 @@ for i, food in enumerate(foods):
                 nutrient_per_food[food].append(data[i][j + 2] * food.solution_value())
             else:
                 nutrient_per_food[food]=[data[i][j + 2] * food.solution_value()]
-                
-df_foods = pd.DataFrame.from_dict(nutrient_per_food, orient='index', columns=[n[0] for n in nutrients])
 
-for i, nutrient in enumerate(nutrients):
-    df_foods[nutrient[0]]=(df_foods[nutrient[0]]/nutrients_result[i]*100).round(2)
+columns = [replace_unit_with_percent(n[0]) for n in nutrients]
+
+df_foods = pd.DataFrame.from_dict(nutrient_per_food, orient='index', 
+    columns=columns)
+
+for i, column in enumerate(columns):
+    df_foods[column]=(df_foods[column]/nutrients_result[i]*100).round(2)
 
 st.table(df_foods)                                       

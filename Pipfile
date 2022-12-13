@@ -9,6 +9,7 @@ ortools = "*"
 pandas = "*"
 matplotlib = "*"
 streamlit = "*"
+xlrd = "*"
 
 [dev-packages]
 

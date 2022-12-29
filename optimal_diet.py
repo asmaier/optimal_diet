@@ -21,40 +21,43 @@ df_foods=pd.read_csv("ciqual_2020.csv")
 # remove certain foods
 
 remove_foods = ["Acerola. pulp. raw. sampled in the island of La Martiniqu", 
-                "Egg. powd", "Milk. powder. semi-skimmed", 
-                "Decaffeinated coffee. powder. instan",
+                "Egg. powder", 
+                "Milk. powder. semi-skimmed", 
+                "Decaffeinated coffee. powder. instant",
                 "Decaffeinated not instant coffee. without sugar. ready-to-drink",
                 "Espresso coffee. not instant coffee. without sugar. ready-to-drink",
                 "Not instant coffee. without sugar. ready-to-drink",
-                "Tea. brewed. without sug",
+                "Tea. brewed. without sugar",
                 "Royal jelly", 
-                "Cocoa powder for baby beverag", 
-                "Egg white. powd", 
+                "Cocoa powder for baby beverage", 
+                "Egg white. powder", 
                 "Milk. powder. skimmed", 
                 "Instant cereal (powder to be reconstituted) for baby from 4/6 month",
-                "Milk. powder. whol",
-                "Instant cereal (powder to be reconstituted) for baby from 6 month",
-                "Egg yolk. powd", 
+                "Milk. powder. whole",
+                "Instant cereal (powder to be reconstituted) for baby from 6 months",
+                "Egg yolk. powder", 
                 "Gelatine. dried", 
                 "Baby milk. first age. powd",
                 "Baby milk. second age. powd",
-                "Soya flou", 
+                "Soya flour", 
                 "Sea belt (Saccharina latissima). dried or dehydrated", 
                 "Veal stock for sauce and cooking. dehydrated", 
                 "Broth. stock or bouillon. meat and vegetables. with fat. dehydrated", 
                 "Broth. stock or bouillon. meat and vegetables. defatted. dehydrated",
                 "Broth. stock or bouillon. beef. dehydrated",
                 "Madeira wine aspic. dehydrated", 
-                "Nutritional y", 
+                "Nutritional yeast", 
                 "Chewing gum. without sug", 
                 "Chewing gum. sugar level unknown (average)",
-                "Baking powder or raising agen", "Prepared mixed meat/fish canned. salad", "Stevia sweeten"]
+                "Baking powder or raising agen", 
+                "Prepared mixed meat/fish canned. salad", 
+                "Stevia sweeten"]
 
 df_foods_filtered = filter_rows_by_values(df_foods, "Name", remove_foods)
 
 commodities = list(df_foods_filtered["Name"])
 
-data = df_foods_filtered.drop("Name", axis=1).values.tolist()
+data = df_foods_filtered.drop(["Group", "Subgroup", "Subsubgroup", "Name"], axis=1).values.tolist()
 
 # Nutrient minimums.
 df_nutrients = pd.read_csv("rdi.csv")
